@@ -4,10 +4,12 @@ import numpy as np
 import random
 import numpy as np
 class game(object):
-    def __init__(self, board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]):
-        self.board = board; self.score = 0
+    def __init__(self):
+        self.board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+        self.score = 0
         self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
-        self.addTile(); self.addTile()
+        self.addTile()
+        self.addTile()
     def show(self):
         for row in self.board:
             print row
@@ -19,7 +21,7 @@ class game(object):
         elif direction ==3: moved = self.moveDir(s,[2,1,0,2,1,2], False)
         elif direction ==4: moved = self.moveDir(s,[1,2,3,1,2,1], True)
         if np.count_nonzero(self.board) == 16:
-            print "you lose, your score was "+ str(self.score)
+            if printing: print "you lose, your score was "+ str(self.score)
             return self.score
         elif moved: self.addTile()
         elif printing: print "can't move that way"
@@ -51,10 +53,10 @@ class game(object):
 
 def randomPlaying():
     g = game()
-    while True:
+    x = None
+    while x==None:
         x = g.move(random.choice([1,2,3,4]), False)
-        if x>0:
-            return x
+    return x
 def downRightLeftUp():
     g = game()
     while True:
@@ -88,8 +90,8 @@ def downRightDownRight():
             return x
 
 results = []
-for i in range(100):
-    results.append(randomPlaying())
+for i in range(1000):
+    results.append(downRightLeftUp())
 print np.mean(results)
 
         
