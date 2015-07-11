@@ -1,4 +1,5 @@
-import random
+from random import randint
+from random import choice
 import numpy as np
 import time
 
@@ -20,9 +21,10 @@ class game(object):
         elif direction ==2: moved = self.moveDir([2,1,0,2,1,2], True)
         elif direction ==3: moved = self.moveDir([2,1,0,2,1,2], False)
         elif direction ==4: moved = self.moveDir([1,2,3,1,2,1], True)
-        if np.count_nonzero(self.board) == 16:
+        if moved!=0: self.addTile()
+        elif np.count_nonzero(self.board) == 16:
             saved = [[x for x in item] for item in self.board]
-            canmove = self.moveDir([1,2,3,1,2,1], False)+self.moveDir([2,1,0,2,1,2], True)+self.moveDir([2,1,0,2,1,2], False)+self.moveDir([1,2,3,1,2,1], True)
+            canmove = self.moveDir([1,2,3], False)+self.moveDir([2,1,0], True)+self.moveDir([2,1,0], False)+self.moveDir([1,2,3], True)
             if canmove == 0:
                 if printing:
                     print "you lose, your score was "+ str(self.score)
@@ -30,32 +32,31 @@ class game(object):
                 return self.score,np.max(self.board)
             else:
                 self.board = saved
-        elif moved!=0: self.addTile()
         elif printing: print "can't move that way"
         if printing:
             self.show()
             print ""
     def addTile(self):
-        place = (random.randint(0,3),random.randint(0,3))
-        while self.board[place[0]][place[1]]!=0:
-            place = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
-        self.board[place[0]][place[1]]=random.choice([2,2,2,2,4])
+        options = [(i,j) for i in xrange(4) for j in xrange(4) if self.board[i][j]==0]
+        place = choice(options)
+        self.board[place[0]][place[1]]=choice([2,2,2,2,4])
     def moveLine(self, start, direction, column):
         moved=0
-        if column: self.board = np.transpose(self.board)
-        for i in range(4):
+        if column: self.board = [[self.board[j][i] for j in xrange(4)]for i in xrange(4)]
+        for i in xrange(4):
             if self.board[start][i] !=0 and not self.statics[start+direction][i]:
-                if not self.statics[start][i] and self.board[start+direction][i] == self.board[start][i]:
+                if self.board[start+direction][i]==0:
+                    self.board[start+direction][i]=self.board[start][i]
+                    self.board[start][i] =0
+                    moved+=1
+                elif not self.statics[start][i] and self.board[start+direction][i] == self.board[start][i]:
                     self.board[start+direction][i]*=2
                     self.statics[start+direction][i] = True
                     self.score+=self.board[start+direction][i]
                     self.board[start][i] =0
                     moved+=1
-                if self.board[start+direction][i]==0:
-                    self.board[start+direction][i]=self.board[start][i]
-                    self.board[start][i] =0
-                    moved+=1
-        if column: self.board = np.transpose(self.board).tolist()
+                
+        if column: self.board = [[self.board[j][i] for j in xrange(4)]for i in xrange(4)]
         return moved
     def moveDir(self, lis, column):
         moved=0
@@ -101,36 +102,39 @@ def downRightDownRight(printing):
                     x = g.move(1, False)
         if x!=None:
             return x
-starttime = time.time()
-print "random"
-score = []
-maxes = []
-for i in range(1000):
-    a,b=randomPlaying(False)
-    score.append(a)
-    maxes.append(b)
-print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
-print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
+def test(times):
+    starttime = time.time()
+    print "random"
+    score = []
+    maxes = []
+    for i in xrange(times):
+        a,b=randomPlaying(False)
+        score.append(a)
+        maxes.append(b)
+    print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+    print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
-print "swirl"
-score = []
-maxes = []
-for i in range(1000):
-    a,b=downRightLeftUp(False)
-    score.append(a)
-    maxes.append(b)
-print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
-print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
+    print "swirl"
+    score = []
+    maxes = []
+    for i in xrange(times):
+        a,b=downRightLeftUp(False)
+        score.append(a)
+        maxes.append(b)
+    print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+    print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
-print "down right"
-score = []
-maxes = []
-for i in range(1000):
-    a,b=downRightDownRight(False)
-    score.append(a)
-    maxes.append(b)
-print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
-print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
+    print "down right"
+    score = []
+    maxes = []
+    for i in xrange(times):
+        a,b=downRightDownRight(False)
+        score.append(a)
+        maxes.append(b)
+    print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+    print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
-print "total time to run was "+str(time.time()-starttime)
-    
+    print "total time to run "+times+" times was "+str(time.time()-starttime)
+test(10000)  
+#import profile
+#profile.run("test(500)")
