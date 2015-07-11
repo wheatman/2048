@@ -134,7 +134,7 @@ def test(times):
     print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
     print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
-    print "total time to run "+times+" times was "+str(time.time()-starttime)
+    print "total time to run "+str(times)+" times was "+str(time.time()-starttime)
 test(10000)  
 #import profile
 #profile.run("test(500)")
