@@ -1,147 +1,62 @@
 import random
 import numpy as np
 
+import random
+import numpy as np
 class game(object):
-    def __init__(self, info):
-        self.board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
-        self.score = 0
-
-    def start(self):
-        value1 = random.choice([2,2,2,2,4])
-        value2 = random.choice([2,2,2,2,4])
-        start1 = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
-        start2 = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
-        while start2==start1:
-            start2 = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
-        self.board[start1[0]][start1[1]] = value1
-        self.board[start2[0]][start2[1]] = value2
-        
+    def __init__(self, board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]):
+        self.board = board; self.score = 0
+        self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
+        self.addTile(); self.addTile()
     def show(self):
         for row in self.board:
             print row
-            
-    def move(self, direction, printing = True):
-        if direction ==1:
-            moved = self.moveUp()
-        elif direction ==2:
-            moved = self.moveRight()
-        elif direction ==3:
-            moved = self.moveDown()
-        elif direction ==4:
-            moved = self.moveLeft()
-        else:
-            print "move must be called with 1, 2, 3,or 4"
-        if self.gameOver():
-            if printing:
-                print "you lose, your score was"
-                self.show()
-                print self.score
+    def move(self, direction, printing=True):
+        self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
+        s = [[item for item in x] for x in self.board]
+        if direction ==1:  moved = self.moveDir(s,[1,2,3,1,2,1], False)
+        elif direction ==2: moved = self.moveDir(s,[2,1,0,2,1,2], True)
+        elif direction ==3: moved = self.moveDir(s,[2,1,0,2,1,2], False)
+        elif direction ==4: moved = self.moveDir(s,[1,2,3,1,2,1], True)
+        if np.count_nonzero(self.board) == 16:
+            print "you lose, your score was "+ str(self.score)
             return self.score
-        if moved:
-            self.addTile()
-            if printing:
-                self.show()
-        else:
-            "can't move that way"
-            return "can't move that way"
-        
+        elif moved: self.addTile()
+        elif printing: print "can't move that way"
+        if printing:
+            self.show()
     def addTile(self):
-        value = random.choice([2,2,2,2,4])
-        place = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
+        place = (random.randint(0,3),random.randint(0,3))
         while self.board[place[0]][place[1]]!=0:
             place = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
-        self.board[place[0]][place[1]]=value
-        
-    def gameOver(self):
-        lose = True
-        for row in self.board:
-            for item in row:
-                if item ==0:
-                    lose = False
-        return lose
-    
-    def moveRow(self, start, direction, cellsToMove):
-        cells = []
-        for i in cellsToMove:
-            if self.board[start][i] !=0:
-                if self.board[start+direction][i] == self.board[start][i]:
+        self.board[place[0]][place[1]]=random.choice([2,2,2,2,4])
+    def moveLine(self, start, direction, column):
+        if column: self.board = np.transpose(self.board)
+        for i in range(4):
+            if self.board[start][i] !=0 and not self.statics[start+direction][i]:
+                if not self.statics[start][i] and self.board[start+direction][i] == self.board[start][i]:
                     self.board[start+direction][i]*=2
+                    self.statics[start+direction][i] = True
+                    self.score+=self.board[start+direction][i]
                     self.board[start][i] =0
-                    cells.append(i)
-                    self.score+=2*i
                 if self.board[start+direction][i]==0:
                     self.board[start+direction][i]=self.board[start][i]
                     self.board[start][i] =0
-        return [item for item in cellsToMove if item not in cells]
-    def moveColumn(self, start, direction, cellsToMove):
-        cells = []
-        for i in cellsToMove:
-            if self.board[i][start] !=0:
-                if self.board[i][start+direction] == self.board[i][start]:
-                    self.board[i][start+direction]*=2
-                    self.board[i][start] =0
-                    cells.append(i)
-                    self.score+=2*i
-                if self.board[i][start+direction]==0:
-                    self.board[i][start+direction]=self.board[i][start]
-                    self.board[i][start] =0
-        return [item for item in cellsToMove if item not in cells]
-    def moveUp(self):
-        start = [[item for item in x] for x in self.board]
-        cells = self.moveRow(1,-1,range(4))
-        cells = self.moveRow(2,-1,cells)
-        cells = self.moveRow(3,-1,cells)
-        cells = self.moveRow(1,-1,cells)
-        cells = self.moveRow(2,-1,cells)
-        cells = self.moveRow(1,-1,cells)
-        if start == self.board:
-            return False
-        return True
-    def moveDown(self):
-        start = [[item for item in x] for x in self.board]
-        cells = self.moveRow(2,1,range(4))
-        cells = self.moveRow(1,1,cells)
-        cells = self.moveRow(0,1,cells)
-        cells = self.moveRow(2,1,cells)
-        cells = self.moveRow(1,1,cells)
-        cells = self.moveRow(2,1,cells)
-        if start == self.board:
-            return False
-        return True
-    def moveLeft(self):
-        start = [[item for item in x] for x in self.board]
-        cells = self.moveColumn(1,-1,range(4))
-        cells = self.moveColumn(2,-1,cells)
-        cells = self.moveColumn(3,-1,cells)
-        cells = self.moveColumn(1,-1,cells)
-        cells = self.moveColumn(2,-1,cells)
-        cells = self.moveColumn(1,-1,cells)
-        if start == self.board:
-            return False
-        return True
-    def moveRight(self):
-        start = [[item for item in x] for x in self.board]
-        cells = self.moveColumn(2,1,range(4))
-        cells = self.moveColumn(1,1,cells)
-        cells = self.moveColumn(0,1,cells)
-        cells = self.moveColumn(2,1,cells)
-        cells = self.moveColumn(1,1,cells)
-        cells = self.moveColumn(2,1,cells)
-        if start == self.board:
-            return False
+        if column: self.board = np.transpose(self.board).tolist()
+    def moveDir(self, start, lis, column):
+        for i in lis:
+            self.moveLine(i,2*lis[0]-3, column)
+        if start ==self.board: return False
         return True
 
 def randomPlaying():
-    g = game([])
-    g.start()
+    g = game()
     while True:
         x = g.move(random.choice([1,2,3,4]), False)
-        if type(x)==int:
+        if x>0:
             return x
-            break
 def downRightLeftUp():
-    g = game([])
-    g.start()
+    g = game()
     while True:
         x = g.move(3, False)
         if type(x)==str:
@@ -153,8 +68,7 @@ def downRightLeftUp():
         if type(x) == int:
             return x
 def downRightDownRight():
-    g = game([])
-    g.start()
+    g = game()
     while True:
         x = g.move(3, False)
         if type(x)==str:
@@ -172,11 +86,11 @@ def downRightDownRight():
                     x = g.move(1, False)
         if type(x) == int:
             return x
-"""
+
 results = []
-for i in range(10000):
-    results.append(downRightDownRight())
+for i in range(100):
+    results.append(randomPlaying())
 print np.mean(results)
-"""   
+
         
     
