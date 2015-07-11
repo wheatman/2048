@@ -8,14 +8,14 @@ class game(object):
     def __init__(self):
         self.board = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
         self.score = 0
-        self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
+        self.statics = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
         self.addTile()
         self.addTile()
     def show(self):
         for row in self.board:
             print row
     def move(self, direction, printing=True):
-        self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
+        self.statics = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
         if direction ==1:  moved = self.moveDir([1,2,3,1,2,1], False)
         elif direction ==2: moved = self.moveDir([2,1,0,2,1,2], True)
         elif direction ==3: moved = self.moveDir([2,1,0,2,1,2], False)
@@ -27,7 +27,7 @@ class game(object):
                 if printing:
                     print "you lose, your score was "+ str(self.score)
                     self.show()
-                return self.score
+                return self.score,np.max(self.board)
             else:
                 self.board = saved
         elif moved!=0: self.addTile()
@@ -103,25 +103,34 @@ def downRightDownRight(printing):
             return x
 starttime = time.time()
 print "random"
-results = []
-for i in range(100):
-    results.append(randomPlaying(False))
-print "mean is "+str(np.mean(results))
-print "max is "+str(np.max(results))
+score = []
+maxes = []
+for i in range(1000):
+    a,b=randomPlaying(False)
+    score.append(a)
+    maxes.append(b)
+print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
 print "swirl"
-results = []
-for i in range(100):
-    results.append(downRightLeftUp(False))
-print "mean is "+str(np.mean(results))
-print "max is "+str(np.max(results))
+score = []
+maxes = []
+for i in range(1000):
+    a,b=downRightLeftUp(False)
+    score.append(a)
+    maxes.append(b)
+print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
 print "down right"
-results = []
-for i in range(100):
-    results.append(downRightDownRight(False))
-print "mean is "+str(np.mean(results))
-print "max is "+str(np.max(results))
+score = []
+maxes = []
+for i in range(1000):
+    a,b=downRightDownRight(False)
+    score.append(a)
+    maxes.append(b)
+print "mean is score was "+str(np.mean(score))+" biggest tile was "+str(np.mean(maxes))
+print "max score "+str(np.max(score))+" biggest tile was "+str(np.max(maxes))
 
 print "total time to run was "+str(time.time()-starttime)
     
