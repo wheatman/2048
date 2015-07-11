@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import time
 
 import random
 import numpy as np
@@ -15,24 +16,32 @@ class game(object):
             print row
     def move(self, direction, printing=True):
         self.statics = [[False,False,False,False],[False,False,False,False],[False,False,False,False],[False,False,False,False]]
-        s = [[item for item in x] for x in self.board]
-        if direction ==1:  moved = self.moveDir(s,[1,2,3,1,2,1], False)
-        elif direction ==2: moved = self.moveDir(s,[2,1,0,2,1,2], True)
-        elif direction ==3: moved = self.moveDir(s,[2,1,0,2,1,2], False)
-        elif direction ==4: moved = self.moveDir(s,[1,2,3,1,2,1], True)
+        if direction ==1:  moved = self.moveDir([1,2,3,1,2,1], False)
+        elif direction ==2: moved = self.moveDir([2,1,0,2,1,2], True)
+        elif direction ==3: moved = self.moveDir([2,1,0,2,1,2], False)
+        elif direction ==4: moved = self.moveDir([1,2,3,1,2,1], True)
         if np.count_nonzero(self.board) == 16:
-            if printing: print "you lose, your score was "+ str(self.score)
-            return self.score
-        elif moved: self.addTile()
+            saved = [[x for x in item] for item in self.board]
+            canmove = self.moveDir([1,2,3,1,2,1], False)+self.moveDir([2,1,0,2,1,2], True)+self.moveDir([2,1,0,2,1,2], False)+self.moveDir([1,2,3,1,2,1], True)
+            if canmove == 0:
+                if printing:
+                    print "you lose, your score was "+ str(self.score)
+                    self.show()
+                return self.score
+            else:
+                self.board = saved
+        elif moved!=0: self.addTile()
         elif printing: print "can't move that way"
         if printing:
             self.show()
+            print ""
     def addTile(self):
         place = (random.randint(0,3),random.randint(0,3))
         while self.board[place[0]][place[1]]!=0:
             place = (random.choice([0,1,2,3]),random.choice([0,1,2,3]))
         self.board[place[0]][place[1]]=random.choice([2,2,2,2,4])
     def moveLine(self, start, direction, column):
+        moved=0
         if column: self.board = np.transpose(self.board)
         for i in range(4):
             if self.board[start][i] !=0 and not self.statics[start+direction][i]:
@@ -41,58 +50,78 @@ class game(object):
                     self.statics[start+direction][i] = True
                     self.score+=self.board[start+direction][i]
                     self.board[start][i] =0
+                    moved+=1
                 if self.board[start+direction][i]==0:
                     self.board[start+direction][i]=self.board[start][i]
                     self.board[start][i] =0
+                    moved+=1
         if column: self.board = np.transpose(self.board).tolist()
-    def moveDir(self, start, lis, column):
+        return moved
+    def moveDir(self, lis, column):
+        moved=0
         for i in lis:
-            self.moveLine(i,2*lis[0]-3, column)
-        if start ==self.board: return False
-        return True
+            moved+=self.moveLine(i,2*lis[0]-3, column)
+        return moved
 
-def randomPlaying():
+def randomPlaying(printing):
     g = game()
     x = None
     while x==None:
-        x = g.move(random.choice([1,2,3,4]), False)
+        x = g.move(random.choice([1,2,3,4]), printing)
     return x
-def downRightLeftUp():
+def downRightLeftUp(printing):
     g = game()
-    while True:
-        x = g.move(3, False)
-        if type(x)==str:
-            x = g.move(2, False)
-            if type(x)==str:
-                x = g.move(4, False)
-                if type(x)==str:
-                    x = g.move(1, False)
-        if type(x) == int:
+    x = None
+    while x==None:
+        x = g.move(3, printing)
+        if x==None:
+            x = g.move(2, printing)
+            if x==None:
+                x = g.move(4, printing)
+                if x==None:
+                    x = g.move(1, printing)
+        if x!=None:
             return x
-def downRightDownRight():
+def downRightDownRight(printing):
     g = game()
     while True:
-        x = g.move(3, False)
-        if type(x)==str:
-            x = g.move(2, False)
-            if type(x)==str:
-                x = g.move(4, False)
-                if type(x)==str:
-                    x = g.move(1, False)
+        x = g.move(3, printing)
+        if x==None:
+            x = g.move(2, printing)
+            if x==None:
+                x = g.move(4, printing)
+                if x==None:
+                    x = g.move(1, printing)
         x = g.move(2, False)
-        if type(x)==str:
+        if x==None:
             x = g.move(3, False)
-            if type(x)==str:
+            if x==None:
                 x = g.move(4, False)
-                if type(x)==str:
+                if x==None:
                     x = g.move(1, False)
-        if type(x) == int:
+        if x!=None:
             return x
-
+starttime = time.time()
+print "random"
 results = []
-for i in range(1000):
-    results.append(downRightLeftUp())
-print np.mean(results)
+for i in range(100):
+    results.append(randomPlaying(False))
+print "mean is "+str(np.mean(results))
+print "max is "+str(np.max(results))
 
-        
+print "swirl"
+results = []
+for i in range(100):
+    results.append(downRightLeftUp(False))
+print "mean is "+str(np.mean(results))
+print "max is "+str(np.max(results))
+
+print "down right"
+results = []
+for i in range(100):
+    results.append(downRightDownRight(False))
+print "mean is "+str(np.mean(results))
+print "max is "+str(np.max(results))
+
+print "total time to run was "+str(time.time()-starttime)
     

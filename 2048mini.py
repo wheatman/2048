@@ -15,7 +15,11 @@ class game(object):
         elif direction ==2: moved = self.moveDir(s,[2,1,0,2,1,2], True)
         elif direction ==3: moved = self.moveDir(s,[2,1,0,2,1,2], False)
         elif direction ==4: moved = self.moveDir(s,[1,2,3,1,2,1], True)
-        if np.count_nonzero(self.board) == 16: print "you lose, your score was "+ str(self.score)
+        if np.count_nonzero(self.board) == 16:
+            saved = [[x for x in item] for item in self.board]
+            canmove = self.moveDir([1,2,3,1,2,1], False)+self.moveDir([2,1,0,2,1,2], True)+self.moveDir([2,1,0,2,1,2], False)+self.moveDir([1,2,3,1,2,1], True)
+            if canmove == 0: print "you lose your score was "+str(self.score)
+            else: self.board = saved
         elif moved: self.addTile()
         else: print "can't move that way"
         self.show()
